@@ -1,367 +1,134 @@
-# Ejercicio 1
-class Calificador:
-    def __init__(self):
-        self.notas = []
+from pasajero import Pasajero
+from mi_pila import MiPila
+from mi_cola import MiCola
 
-    def validar_nota(self, nota):
-        return 0 <= nota <= 100
+pila = MiPila(10)
+cola = MiCola(10)
 
-    def cargar_notas(self, *args):
-        for n in args:
-            if self.validar_nota(n):
-                self.notas.append(n)
-        return self.notas
+def leer_entero(mensaje):
+    while True:
+        try:
+            return int(input(mensaje))
+        except ValueError:
+            print("  Debe ingresar un número entero.")
 
-    def promedio(self):
-        return sum(self.notas) / len(self.notas) if self.notas else 0.0
+def leer_pasajero():
+    numero = leer_entero("  N.º de pasajero: ")
+    nombre = input("  Nombre: ").strip()
+    cedula = input("  Cédula: ").strip()
+    edad = leer_entero("  Edad: ")
+    fecha = input("  Fecha de vuelo (AAAA-MM-DD): ").strip()
+    destino = input("  Destino: ").strip()
+    asiento = input("  Asiento: ").strip().upper()
+    return Pasajero(numero, nombre, cedula, edad, fecha, destino, asiento)
 
+def datos_prueba():
+    return [
+        Pasajero(1005, "Diana", "0923456789", 22, "2026-11-15", "Quito", "12A"),
+        Pasajero(1002, "Ana", "0912345678", 28, "2026-11-15", "Lima", "03C"),
+        Pasajero(1009, "Luis", "0987654321", 35, "2026-11-20", "Bogotá", "18F"),
+        Pasajero(1004, "Beto", "0934567890", 16, "2026-11-20", "Quito", "07B"),
+        Pasajero(1001, "Elena", "0901234567", 41, "2026-11-22", "Lima", "01A")
+    ]
 
-# Ejercicio 2
-class AnalizadorTexto:
-    def __init__(self):
-        self.conjunto = set()
-        self.lista = []
+def mostrar_menu(titulo, entrar, salir, ver):
+    print(f"\n========== {titulo} ==========")
+    print(f" 1. {entrar:<12}  2. Listar          3. {salir}")
+    print(f" 4. {ver:<12}  5. Buscar          6. Modificar")
+    print(" 7. Eliminar por número         8. Copiar")
+    print(" 9. Longitud / ¿vacía?")
+    print(" C. Cargar datos de prueba      0. Volver")
 
-    def agregar_palabra(self, palabra):
-        self.conjunto.add(palabra)
-        self.lista.append(palabra)
-
-    def contar_palabras(self):
-        return len(self.conjunto)
-
-    def agregar_multiples(self, *args):
-        for p in args:
-            self.agregar_palabra(p)
-
-
-# Ejercicio 3
-class CarroCompras:
-    def __init__(self):
-        self.articulos = {}
-
-    def agregar_articulo(self, nombre, precio):
-        self.articulos[nombre] = precio
-
-    def total_carrito(self):
-        return sum(self.articulos.values())
-
-    def articulos_por_rango(self, precio_min, precio_max):
-        return [nom for nom, p in self.articulos.items() if precio_min <= p <= precio_max]
-
-
-# Ejercicio 4
-class InversorSecuencia:
-    def invertir_lista(self, lista):
-        invertida = []
-        for i in range(len(lista) - 1, -1, -1):
-            invertida.append(lista[i])
-        return invertida
-
-    def invertir_multiples(self, *listas):
-        resultado = {}
-        for l in listas:
-            resultado[tuple(l)] = self.invertir_lista(l)
-        return resultado
-
-
-# Ejercicio 5
-class AnalizadorNumeros:
-    def __init__(self):
-        self.clasificacion = {'pares': [], 'impares': []}
-
-    def es_par(self, numero):
-        return numero % 2 == 0
-
-    def separar(self, *numeros):
-        self.clasificacion = {'pares': [], 'impares': []}
-        for n in numeros:
-            if self.es_par(n):
-                self.clasificacion['pares'].append(n)
+def menu_pila():
+    while True:
+        mostrar_menu("MENÚ 1 - PILA (LIFO)", "Apilar", "Desapilar", "Ver tope")
+        op = input("Opción: ").strip().upper()
+        if op == "1":
+            if pila.apilar(leer_pasajero()): print("  Pasajero apilado.")
+        elif op == "2": pila.listar()
+        elif op == "3":
+            p = pila.desapilar()
+            if p is None: print("  La pila está vacía.")
             else:
-                self.clasificacion['impares'].append(n)
-        return self.clasificacion
+                print(f"  Salió: {p}")
+                print("  Nuevo tope: " + (pila.ver_tope().nombre if pila.ver_tope() else "(pila vacía)"))
+        elif op == "4":
+            p = pila.ver_tope()
+            print(f"  Tope: {p}" if p else "  La pila está vacía.")
+        elif op == "5":
+            n = leer_entero("  Número de pasajero: "); pos = pila.buscar(n)
+            print(f"  Encontrado en [{pos}]: {pila.datos[pos]}" if pos != -1 else "  No existe ese pasajero.")
+        elif op == "6":
+            n = leer_entero("  Número: "); d = input("  Nuevo destino: ").strip(); a = input("  Nuevo asiento: ").strip().upper()
+            print("  Modificado correctamente." if pila.modificar(n, d, a) else "  No existe ese pasajero.")
+        elif op == "7":
+            n = leer_entero("  Número a eliminar: ")
+            print("  Pasajero eliminado." if pila.eliminar_por_numero(n) else "  No existe ese pasajero.")
+        elif op == "8":
+            copia = pila.copiar(); print("  Copia de la pila:"); copia.listar()
+        elif op == "9":
+            print(f"  Longitud: {pila.longitud()}")
+            print("  La pila está vacía." if pila.esta_vacia() else "  La pila no está vacía.")
+        elif op == "C":
+            total = 0
+            for p in datos_prueba():
+                if pila.apilar(p): total += 1
+            print(f"  Se agregaron {total} pasajeros nuevos. Total: {pila.longitud()}.")
+        elif op == "0": break
+        else: print("  Opción no válida.")
+
+def menu_cola():
+    while True:
+        mostrar_menu("MENÚ 2 - COLA (FIFO)", "Encolar", "Desencolar", "Ver frente")
+        op = input("Opción: ").strip().upper()
+        if op == "1":
+            if cola.encolar(leer_pasajero()): print("  Pasajero encolado.")
+        elif op == "2": cola.listar()
+        elif op == "3":
+            p = cola.desencolar()
+            if p is None: print("  La cola está vacía.")
+            else:
+                print(f"  Salió: {p}")
+                print("  Nuevo frente: " + (cola.ver_frente().nombre if cola.ver_frente() else "(cola vacía)"))
+        elif op == "4":
+            p = cola.ver_frente()
+            print(f"  Frente: {p}" if p else "  La cola está vacía.")
+        elif op == "5":
+            n = leer_entero("  Número de pasajero: "); pos = cola.buscar(n)
+            print(f"  Encontrado en [{pos}]: {cola.datos[pos]}" if pos != -1 else "  No existe ese pasajero.")
+        elif op == "6":
+            n = leer_entero("  Número: "); d = input("  Nuevo destino: ").strip(); a = input("  Nuevo asiento: ").strip().upper()
+            print("  Modificado correctamente." if cola.modificar(n, d, a) else "  No existe ese pasajero.")
+        elif op == "7":
+            n = leer_entero("  Número a eliminar: ")
+            print("  Pasajero eliminado." if cola.eliminar_por_numero(n) else "  No existe ese pasajero.")
+        elif op == "8":
+            copia = cola.copiar(); print("  Copia de la cola:"); copia.listar()
+        elif op == "9":
+            print(f"  Longitud: {cola.longitud()}")
+            print("  La cola está vacía." if cola.esta_vacia() else "  La cola no está vacía.")
+        elif op == "C":
+            total = 0
+            for p in datos_prueba():
+                if cola.encolar(p): total += 1
+            print(f"  Se agregaron {total} pasajeros nuevos. Total: {cola.longitud()}.")
+        elif op == "0": break
+        else: print("  Opción no válida.")
+
+def main():
+    while True:
+        print("\n===== TAREA PILAS Y COLAS - PASAJEROS =====")
+        print("1. Menú 1 - Pila")
+        print("2. Menú 2 - Cola")
+        print("3. Salir")
+        op = input("Opción: ").strip()
+        if op == "1": menu_pila()
+        elif op == "2": menu_cola()
+        elif op == "3":
+            print("¡Hasta pronto!")
+            break
+        else: print("Opción no válida.")
+
+if __name__ == "__main__":
+    main()
 
-    def cantidad_pares_impares(self):
-        return (len(self.clasificacion['pares']), len(self.clasificacion['impares']))
-
-
-# Ejercicio 6
-class GestorTemperatura:
-    def __init__(self):
-        self.temperaturas = []
-
-    def registrar_temperatura(self, temp):
-        self.temperaturas.append(temp)
-
-    def minima(self):
-        return min(self.temperaturas) if self.temperaturas else None
-
-    def maxima(self):
-        return max(self.temperaturas) if self.temperaturas else None
-
-    def promedio(self):
-        return sum(self.temperaturas) / len(self.temperaturas) if self.temperaturas else 0.0
-
-    def registrar_multiples(self, *temps):
-        for t in temps:
-            self.registrar_temperatura(t)
-
-
-# Ejercicio 7
-class GestorPersonas:
-    def __init__(self):
-        self.personas = {}
-
-    def agregar_persona(self, nombre, edad):
-        self.personas[nombre] = edad
-
-    def personas_mayores(self, edad_minima):
-        return [nom for nom, ed in self.personas.items() if ed >= edad_minima]
-
-    def edad_promedio(self):
-        return sum(self.personas.values()) / len(self.personas) if self.personas else 0.0
-
-
-# Ejercicio 8
-class Equipos:
-    def __init__(self):
-        self.equipos = {}
-
-    def crear_equipo(self, nombre_equipo):
-        if nombre_equipo not in self.equipos:
-            self.equipos[nombre_equipo] = []
-
-    def agregar_jugador(self, equipo, jugador):
-        if equipo in self.equipos:
-            self.equipos[equipo].append(jugador)
-
-    def equipo_mayor_integrantes(self):
-        if not self.equipos:
-            return None
-        return max(self.equipos, key=lambda eq: len(self.equipos[eq]))
-
-
-# Ejercicio 9
-class AnalizadorString:
-    def __init__(self):
-        self.texto_mas_largo = ""
-
-    def solo_vocales(self, letra):
-        return letra.lower() in "aeiouáéíóú"
-
-    def contar_por_tipo(self, texto):
-        if len(texto) > len(self.texto_mas_largo):
-            self.texto_mas_largo = texto
-            
-        conteos = {'vocales': 0, 'consonantes': 0, 'digitos': 0}
-        for char in texto:
-            if char.isdigit():
-                conteos['digitos'] += 1
-            elif char.isalpha():
-                if self.solo_vocales(char):
-                    conteos['vocales'] += 1
-                else:
-                    conteos['consonantes'] += 1
-        return conteos
-
-
-# Ejercicio 10
-class Tareas:
-    def __init__(self):
-        self.lista_tareas = []
-
-    def agregar_tarea(self, descripcion, prioridad):
-        self.lista_tareas.append((descripcion, prioridad))
-
-    def tareas_prioritarias(self):
-        return [t for t in self.lista_tareas if t[1].lower() == 'alta']
-
-    def eliminar_completada(self, descripcion):
-        self.lista_tareas = [t for t in self.lista_tareas if t[0] != descripcion]
-
-
-# Ejercicio 11
-class ContadorFrecuencia:
-    def __init__(self):
-        self.frecuencias = {}
-
-    def agregar_elemento(self, elemento):
-        self.frecuencias[elemento] = self.frecuencias.get(elemento, 0) + 1
-
-    def elemento_mas_frecuente(self):
-        if not self.frecuencias:
-            return None
-        return max(self.frecuencias, key=self.frecuencias.get)
-
-    def frecuencia_elemento(self, elemento):
-        return self.frecuencias.get(elemento, 0)
-
-
-# Ejercicio 12
-class SelectorRango:
-    def crear_rango(self, inicio, fin):
-        return tuple(range(inicio, fin + 1))
-
-    def elementos_en_multiples_rangos(self, *rangos):
-        elementos = set()
-        for inicio, fin in rangos:
-            elementos.update(range(inicio, fin + 1))
-        return sorted(list(elementos))
-
-
-# Ejercicio 13
-class CombinadorListas:
-    def intercalar(self, lista1, lista2):
-        resultado = []
-        max_len = max(len(lista1), len(lista2))
-        for i in range(max_len):
-            if i < len(lista1):
-                resultado.append(lista1[i])
-            if i < len(lista2):
-                resultado.append(lista2[i])
-        return resultado
-
-    def intercalar_multiples(self, *listas):
-        if not listas:
-            return []
-        resultado = listas[0]
-        for l in listas[1:]:
-            resultado = self.intercalar(resultado, l)
-        return resultado
-
-
-# Ejercicio 14
-class RegistroNotas:
-    def __init__(self):
-        self.registro = {}
-
-    def registrar(self, estudiante, nota):
-        self.registro[estudiante] = nota
-
-    def estudiantes_aprobados(self, nota_minima):
-        return [est for est, nota in self.registro.items() if nota >= nota_minima]
-
-    def mejor_estudiante(self):
-        if not self.registro:
-            return None
-        mejor = max(self.registro.items(), key=lambda x: x[1])
-        return mejor
-
-
-# Ejercicio 15
-class DivisorFinder:
-    def encontrar_divisores(self, numero):
-        divisores = [i for i in range(1, abs(numero) + 1) if numero % i == 0]
-        return tuple(divisores)
-
-    def es_perfecto(self, numero):
-        if numero <= 0:
-            return False
-        divisores = self.encontrar_divisores(numero)
-        return sum(divisores[:-1]) == numero
-
-    def encontrar_multiples_divisores(self, *numeros):
-        return {num: self.encontrar_divisores(num) for num in numeros}
-
-
-# Ejercicio 16
-class CodificadorCesar:
-    def __init__(self):
-        self.historial = {}
-
-    def codificar_letra(self, letra, desplazamiento):
-        if letra.isalpha():
-            ascii_base = ord('a') if letra.islower() else ord('A')
-            return chr((ord(letra) - ascii_base + desplazamiento) % 26 + ascii_base)
-        return letra
-
-    def codificar_palabra(self, palabra, desplazamiento):
-        codificada = "".join([self.codificar_letra(c, desplazamiento) for c in palabra])
-        self.historial[palabra] = codificada
-        return codificada
-
-
-# Ejercicio 17
-class AgrupadorEdades:
-    def __init__(self):
-        self.grupos = {}
-
-    def clasificar_edad(self, edad):
-        if edad < 12:
-            return "niño"
-        elif edad < 18:
-            return "adolescente"
-        elif edad < 65:
-            return "adulto"
-        else:
-            return "mayor"
-
-    def agrupar_por_categoria(self, *edades):
-        self.grupos = {"niño": [], "adolescente": [], "adulto": [], "mayor": []}
-        for e in edades:
-            cat = self.clasificar_edad(e)
-            self.grupos[cat].append(e)
-        return {k: v for k, v in self.grupos.items() if v}
-
-    def edad_promedio_categoria(self, categoria):
-        edades = self.grupos.get(categoria, [])
-        return sum(edades) / len(edades) if edades else 0.0
-
-
-# Ejercicio 18
-import math
-
-class CalculadorDistancia:
-    def __init__(self):
-        self.distancias_calculadas = []
-
-    def distancia_euclidiana(self, p1, p2):
-        d = math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
-        self.distancias_calculadas.append(d)
-        return d
-
-    def punto_mas_cercano(self, referencia, *puntos):
-        if not puntos:
-            return None
-        return min(puntos, key=lambda p: self.distancia_euclidiana(referencia, p))
-
-
-# Ejercicio 19
-class Inventario:
-    def __init__(self):
-        self.stock = {}
-
-    def agregar_stock(self, producto, cantidad):
-        self.stock[producto] = self.stock.get(producto, 0) + cantidad
-
-    def restar_stock(self, producto, cantidad):
-        if self.stock.get(producto, 0) >= cantidad:
-            self.stock[producto] -= cantidad
-            return True
-        return False
-
-    def productos_bajo_stock(self, minimo):
-        return [prod for prod, cant in self.stock.items() if cant < minimo]
-
-
-# Ejercicio 20
-class AnalizadorPatrones:
-    def __init__(self):
-        self.palabras_procesadas = set()
-
-    def encontrar_palabras(self, texto, patron):
-        palabras = texto.split()
-        self.palabras_procesadas.update(palabras)
-        return [p for p in palabras if p.startswith(patron)]
-
-    def agrupar_por_longitud(self, texto):
-        palabras = texto.split()
-        self.palabras_procesadas.update(palabras)
-        agrupado = {}
-        for p in palabras:
-            longitud = len(p)
-            agrupado.setdefault(longitud, []).append(p)
-        return agrupado
-
-    def palabras_unicas(self):
-        return self.palabras_procesadas
